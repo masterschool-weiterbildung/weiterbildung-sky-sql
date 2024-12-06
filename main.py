@@ -6,22 +6,35 @@ SQLITE_URI = 'sqlite:///data/flights.sqlite3'
 IATA_LENGTH = 3
 
 
-def delayed_flights_by_airline(data_manager):
+def delayed_flights_by_airline(data_manager) -> None:
     """
+    Retrieve and display delayed flights for a specific airline.
+
     Asks the user for a textual airline name (any string will work here).
     Then runs the query using the data object method "get_delayed_flights_by_airline".
     When results are back, calls "print_results" to show them to on the screen.
+
+    Parameters:
+        data_manager (FlightData):
+            The data manager instance for executing database queries.
     """
     airline_input = input("Enter airline name: ")
     results = data_manager.get_delayed_flights_by_airline(airline_input)
     print_results(results)
 
 
-def delayed_flights_by_airport(data_manager):
+def delayed_flights_by_airport(data_manager) -> None:
     """
-    Asks the user for a textual IATA 3-letter airport code (loops until input is valid).
-    Then runs the query using the data object method "get_delayed_flights_by_airport".
-    When results are back, calls "print_results" to show them to on the screen.
+    Retrieve and display delayed flights for a specific origin airport.
+
+    Asks the user for a textual IATA 3-letter airport code (loops until input
+    is valid). Then runs the query using the data object method
+    "get_delayed_flights_by_airport". When results are back, calls
+    "print_results" to show them to on the screen.
+
+    Parameters:
+        data_manager (FlightData):
+            The data manager instance for executing database queries.
     """
     valid = False
     while not valid:
@@ -33,11 +46,18 @@ def delayed_flights_by_airport(data_manager):
     print_results(results)
 
 
-def flight_by_id(data_manager):
+def flight_by_id(data_manager) -> None:
     """
+    Retrieve and display flight details by flight ID.
+
     Asks the user for a numeric flight ID,
     Then runs the query using the data object method "get_flight_by_id".
     When results are back, calls "print_results" to show them to on the screen.
+
+    Parameters:
+    data_manager (FlightData):
+        The data manager instance for executing database queries.
+
     """
     valid = False
     while not valid:
@@ -51,11 +71,18 @@ def flight_by_id(data_manager):
     print_results(results)
 
 
-def flights_by_date(data_manager):
+def flights_by_date(data_manager) -> None:
     """
+    Retrieve and display flights for a specific date.
+    Prompts the user to input a date in the format 'DD/MM/YYYY'
+
     Asks the user for date input (and loops until it's valid),
     Then runs the query using the data object method "get_flights_by_date".
     When results are back, calls "print_results" to show them to on the screen.
+
+    Parameters:
+    data_manager (FlightData):
+        The data manager instance for executing database queries.
     """
     valid = False
     while not valid:
@@ -63,19 +90,28 @@ def flights_by_date(data_manager):
             date_input = input("Enter date in DD/MM/YYYY format: ")
             date = datetime.strptime(date_input, '%d/%m/%Y')
         except ValueError as e:
-            print("Try again...", e)
+            print("Try again... [DD/MM/YYYY] ", e)
         else:
             valid = True
-    results = data_manager.get_flights_by_date(date.day, date.month, date.year)
+    results = data_manager.get_flights_by_date(date.day, date.month,
+                                               date.year)
     print_results(results)
 
 
-def print_results(results):
+def print_results(results) -> None:
     """
-    Get a list of flight results (List of dictionary-like objects from SQLAachemy).
-    Even if there is one result, it should be provided in a list.
+    Display query results in a readable format.
+
+    Get a list of flight results (List of dictionary-like objects from
+    SQLAachemy). Even if there is one result, it should be provided in a list.
     Each object *has* to contain the columns:
     FLIGHT_ID, ORIGIN_AIRPORT, DESTINATION_AIRPORT, AIRLINE, and DELAY.
+
+    Parameters:
+        results (list of RowProxy):
+            A list of dictionary-like objects containing flight details.
+            Each object must include the columns: `ID`, `ORIGIN_AIRPORT`,
+            `DESTINATION_AIRPORT`, `AIRLINE`, and `DELAY`.
     """
     print(f"Got {len(results)} results.")
     for result in results:
@@ -84,7 +120,8 @@ def print_results(results):
 
         # Check that all required columns are in place
         try:
-            delay = int(result['DELAY']) if result['DELAY'] else 0  # If delay columns is NULL, set it to 0
+            delay = int(result['DELAY']) if result[
+                'DELAY'] else 0  # If delay columns is NULL, set it to 0
             origin = result['ORIGIN_AIRPORT']
             dest = result['DESTINATION_AIRPORT']
             airline = result['AIRLINE']
@@ -94,16 +131,23 @@ def print_results(results):
 
         # Different prints for delayed and non-delayed flights
         if delay and delay > 0:
-            print(f"{result['ID']}. {origin} -> {dest} by {airline}, Delay: {delay} Minutes")
+            print(
+                f"{result['ID']}. {origin} -> {dest} by {airline}, "
+                f"Delay: {delay} Minutes")
         else:
             print(f"{result['ID']}. {origin} -> {dest} by {airline}")
 
 
 def show_menu_and_get_input():
     """
+    Display the menu and get the user's choice.
+
     Show the menu and get user input.
     If it's a valid option, return a pointer to the function to execute.
     Otherwise, keep asking the user for input.
+
+    Returns:
+            A function pointer corresponding to the user's choice.
     """
     print("Menu:")
     for key, value in FUNCTIONS.items():
@@ -112,25 +156,30 @@ def show_menu_and_get_input():
     # Input loop
     while True:
         try:
-            choice = int(input())
+            choice = int(input("Enter choice: "))
             if choice in FUNCTIONS:
                 return FUNCTIONS[choice][0]
         except ValueError as e:
             pass
         print("Try again...")
 
+
 """
 Function Dispatch Dictionary
 """
-FUNCTIONS = { 1: (flight_by_id, "Show flight by ID"),
-              2: (flights_by_date, "Show flights by date"),
-              3: (delayed_flights_by_airline, "Delayed flights by airline"),
-              4: (delayed_flights_by_airport, "Delayed flights by origin airport"),
-              5: (quit, "Exit")
+FUNCTIONS = {1: (flight_by_id, "Show flight by ID"),
+             2: (flights_by_date, "Show flights by date"),
+             3: (delayed_flights_by_airline, "Delayed flights by airline"),
+             4: (
+                 delayed_flights_by_airport,
+                 "Delayed flights by origin airport"),
+             5: (quit, "Exit")
              }
 
 
 def main():
+    # Main program entry point.
+
     # Create an instance of the Data Object using our SQLite URI
     data_manager = data.FlightData(SQLITE_URI)
 
