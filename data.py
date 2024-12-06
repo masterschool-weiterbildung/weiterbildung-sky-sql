@@ -27,17 +27,13 @@ class FlightData:
         If an exception was raised, print the error, and return an empty list.
         """
         try:
-            result_set = []
             with self._engine.connect() as connection:
                 # Run an SQL query
                 query = text(query)
                 results = connection.execute(query, params)
-                rows = results.fetchall()
-                return rows
+                return results.fetchall()
         except Exception as e:
-            print(e)
-
-        pass  # Your code here
+            return []
 
     def get_flight_by_id(self, flight_id):
         """
