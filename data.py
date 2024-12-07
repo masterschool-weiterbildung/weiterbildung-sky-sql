@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine, text, Sequence, Row
+from sqlalchemy.exc import SQLAlchemyError
 
 from util_sql_query import QUERY_FLIGHT_BY_ID, QUERY_FLIGHT_BY_DATE, \
     QUERY_FLIGHT_BY_AIRLINE, QUERY_FLIGHT_BY_ORIGIN_AIRPORT, \
@@ -45,7 +46,11 @@ class FlightData:
                 query = text(query)
                 results = connection.execute(query, params)
                 return results.fetchall()
+        except SQLAlchemyError as e:
+            print(f"SQLAlchemy Error: {e}")
+            return []
         except Exception as e:
+            print(f"Unexpected Error: {e}")
             return []
 
     def get_flight_by_id(self, flight_id) -> Sequence[Row]:
