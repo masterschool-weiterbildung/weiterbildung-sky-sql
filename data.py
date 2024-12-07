@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine, text, Sequence, Row
 
 from util_sql_query import QUERY_FLIGHT_BY_ID, QUERY_FLIGHT_BY_DATE, \
-    QUERY_FLIGHT_BY_AIRLINE, QUERY_FLIGHT_BY_ORIGIN_AIRPORT
+    QUERY_FLIGHT_BY_AIRLINE, QUERY_FLIGHT_BY_ORIGIN_AIRPORT, \
+    QUERY_AVG_PERCENTAGE_DELAYED_FLIGHTS, QUERY_LONG_LAT
 
 
 class FlightData:
@@ -128,6 +129,51 @@ class FlightData:
 
         params = {'origin_airport': airport_input}
         return self._execute_query(QUERY_FLIGHT_BY_ORIGIN_AIRPORT, params)
+
+    def generate_percentage_of_delayed_flights(self,
+                                               origin_airport: str,
+                                               destination_airport: str) -> \
+            Sequence[
+                Row]:
+        """
+        Calculates the average percentage of delayed flights between two airports,
+        considering both directions: origin to destination and destination to origin.
+
+        Parameters:
+            origin_airport (str): The IATA code of the origin airport.
+            destination_airport (str): The IATA code of the destination airport.
+
+        Returns:
+            Sequence[Row]:
+                A sequence of rows fetched from the database.
+        """
+        params = {'origin': origin_airport,
+                  'destination': destination_airport,
+                  'origin_vv': destination_airport,
+                  'destination_vv': origin_airport
+                  }
+        return self._execute_query(QUERY_AVG_PERCENTAGE_DELAYED_FLIGHTS,
+                                   params)
+
+    def get_airport_lat_long(self, origin_airport: str,
+                             destination_airport: str) -> Sequence[
+        Row]:
+        """
+        Retrieves the latitude and longitude coordinates for the specified origin
+        and destination airports.
+
+        Parameters:
+            origin_airport (str): The IATA code of the origin airport.
+            destination_airport (str): The IATA code of the destination airport.
+
+        Returns:
+            Sequence[Row]:
+                A sequence of rows fetched from the database.
+        """
+        params = {'origin': origin_airport,
+                  'destination': destination_airport}
+
+        return self._execute_query(QUERY_LONG_LAT, params)
 
     def __del__(self):
         """

@@ -2,8 +2,56 @@ import data
 from datetime import datetime
 import sqlalchemy
 
+from generate_visual_data_map import process_data_and_map
+
 SQLITE_URI = 'sqlite:///data/flights.sqlite3'
 IATA_LENGTH = 3
+
+
+def generate_percentage_of_delayed_flights(data_manager) -> None:
+    """
+    Prompts the user to input origin and destination airport IATA codes,
+    calculates the average percentage of delayed flights between them, and
+    visualizes the result on a map.
+
+    Parameter:
+        data_manager: An instance of the FlightData class that provides access
+                      to flight-related queries.
+    """
+    global airport_origin_input, airport_destination_input
+    valid = False
+    while not valid:
+        airport_origin_input = input("Enter origin airport IATA code: ")
+        airport_destination_input = input(
+            "Enter destination airport IATA code: ")
+
+        if (airport_origin_input.isalpha()
+                and len(airport_origin_input) == IATA_LENGTH
+                and airport_destination_input.isalpha()
+                and len(airport_destination_input) == IATA_LENGTH):
+            valid = True
+
+    results_percent_delayed = (
+        data_manager.generate_percentage_of_delayed_flights
+        (airport_origin_input, airport_destination_input))
+
+    results_percent_delayed = (results_percent_delayed[0][2] +
+                               results_percent_delayed[1][2]) / 2
+
+    results_lat_long = (data_manager.get_airport_lat_long
+                        (airport_origin_input, airport_destination_input))
+
+    process_data_and_map(airport_origin_input,
+                         airport_destination_input,
+                         results_lat_long[0][1],
+                         results_lat_long[0][2],
+                         results_lat_long[1][1],
+                         results_lat_long[1][2],
+                         results_percent_delayed
+                         )
+    print(
+        f"Origin: {airport_origin_input} <-> Destination: "
+        f"{airport_destination_input} ({results_percent_delayed}% delayed)")
 
 
 def delayed_flights_by_airline(data_manager) -> None:
@@ -173,7 +221,10 @@ FUNCTIONS = {1: (flight_by_id, "Show flight by ID"),
              4: (
                  delayed_flights_by_airport,
                  "Delayed flights by origin airport"),
-             5: (quit, "Exit")
+             5: (
+                 generate_percentage_of_delayed_flights,
+                 "Generate Visual Map for delayed flights"),
+             6: (quit, "Exit")
              }
 
 
